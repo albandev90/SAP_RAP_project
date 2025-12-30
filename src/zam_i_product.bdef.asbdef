@@ -1,0 +1,21 @@
+managed implementation in class zbp_am_i_product unique;
+strict ( 2 );
+
+define behavior for ZAM_I_PRODUCT alias Product
+persistent table zam_d_product
+lock master
+authorization master ( instance )
+
+{
+  create ( authorization : global );
+  update;
+  delete;
+    determination SET_FIRST_PHASE on save {create;}
+    validation VALIDATE_PG on save { create; field pgname; }
+    validation VALIDATE_PRODID on save { create; field prodid; }
+factory action MAKE_COPY parameter ZAM_A_COPY_PRODUCT [1];
+  field ( readonly, numbering : managed ) prod_uuid;
+  field ( readonly ) creation_time, created_by, change_time, changed_by;
+  field ( mandatory ) pgname, price, price_currency;
+  field ( mandatory : create, readonly : update ) prodid;
+}
