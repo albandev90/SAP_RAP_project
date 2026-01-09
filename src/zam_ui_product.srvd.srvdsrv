@@ -5,6 +5,5 @@ define service ZAM_UI_PRODUCT {
   expose ZAM_I_PHASE    as Phase;
   expose ZAM_I_UOM      as UOM;
   expose ZAM_I_CURRENCY as Currency;
-  expose ZAM_I_MARKET   as Market;
-  expose ZAM_C_MARKET   as ProductMarket;
+  expose ZAM_C_MARKET   as Market;
 }

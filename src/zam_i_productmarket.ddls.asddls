@@ -11,6 +11,13 @@ association to parent ZAM_I_PRODUCT as _Product on $projection.prod_uuid = _Prod
   start_date,
   end_date,
   
-
+  @Semantics.user.createdBy: true
+  created_by,
+  @Semantics.systemDateTime.createdAt: true
+  creation_time,
+  @Semantics.user.lastChangedBy: true
+  changed_by,
+  @Semantics.systemDateTime.lastChangedAt: true
+  change_time,
   _Product
 }

@@ -8,4 +8,17 @@ define behavior for ZAM_C_PRODUCT alias Product
   use delete;
   use action MAKE_COPY;
   field ( readonly ) phase;
+
+  use association _Market { create; }
+}
+
+define behavior for ZAM_C_MARKET alias Market
+{
+  use update;
+  use delete;
+
+  // ТРЕБОВАНИЕ ЗАДАНИЯ: Статус только для чтения в проекции
+  field ( readonly ) status_confirm;
+
+  use association _Product;
 }

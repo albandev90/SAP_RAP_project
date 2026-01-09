@@ -18,4 +18,30 @@ factory action MAKE_COPY parameter ZAM_A_COPY_PRODUCT [1];
   field ( readonly ) creation_time, created_by, change_time, changed_by;
   field ( mandatory ) pgname, price, price_currency;
   field ( mandatory : create, readonly : update ) prodid;
+  association _Market { create; }
+}
+
+
+define behavior for ZAM_I_PRODUCTMARKET alias Market
+persistent table zam_d_mrkt_trl  // УБЕДИСЬ, ЧТО ИМЯ ТАБЛИЦЫ ВЕРНОЕ (из твоего словаря)
+lock dependent by _Product
+authorization dependent by _Product
+//etag master <поле_таймстампа_если_есть>
+{
+  update;
+  delete;
+
+  // Требование: MRKT_UUID read only и авто-генерация
+  field ( readonly, numbering : managed ) mrkt_uuid;
+
+  // Требование: Поля аудита read only
+  field ( readonly ) change_time, changed_by, creation_time, created_by;
+
+  // Требование: Обязательные поля (проверь имена полей в твоем CDS)
+  field ( mandatory ) mrktid, start_date;
+
+  // Поле связи с родителем
+  field ( readonly ) prod_uuid;
+
+  association _Product;
 }
