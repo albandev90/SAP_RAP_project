@@ -1,34 +1,137 @@
 @Metadata.layer: #CORE
 @UI: {
+  /* 1. Заголовок и картинка (Pic 4, 5) */
   headerInfo: {
     typeName: 'Market',
     typeNamePlural: 'Markets',
-    title: { type: #STANDARD, value: 'mrktid' }
-  }
+    title: { type: #STANDARD, value: 'MarketName' },
+    imageUrl: 'imageurl' // Чтобы отображался флаг страны
+  },
+  
+  /* 2. Сортировка по умолчанию (Action Point: Default sorting) */
+  presentationVariant: [{ 
+    sortOrder: [ 
+      { by: 'mrktid', direction: #ASC },
+      { by: 'status_confirm', direction: #ASC }
+    ] 
+  }]
 }
+
 annotate view ZAM_C_MARKET with 
 {
+  /* 3. Структура вкладок (Action Point: General + Admin Data) */
   @UI.facet: [
-    { id:            'MarketData',
-      purpose:       #STANDARD,
-      type:          #IDENTIFICATION_REFERENCE,
-      label:         'Market Details',
-      position:      10 }
+    /* Главная вкладка "General Information" */
+    { 
+      id: 'General', 
+      type: #COLLECTION, 
+      label: 'General Information', 
+      position: 10 
+    },
+    /* Группа полей "Basic Data" внутри вкладки General */
+    { 
+      id: 'BasicData', 
+      parentId: 'General', 
+      type: #FIELDGROUP_REFERENCE, 
+      targetQualifier: 'BasicData', 
+      label: 'Basic Data', 
+      position: 10 
+    },
+    /* Вкладка "Admin Data" (Pic 6) */
+    { 
+      id: 'AdminData', 
+      type: #FIELDGROUP_REFERENCE, 
+      targetQualifier: 'AdminData', 
+      label: 'Admin Data', 
+      position: 20 
+    },
+    { 
+      id: 'Actions', 
+      type: #IDENTIFICATION_REFERENCE, 
+      label: 'Actions', 
+      position: 30 
+    },
+    { id: 'HeaderEndDate', 
+      purpose: #HEADER,             // Это указывает, что поле будет в шапке
+      type: #FIELDGROUP_REFERENCE, 
+      targetQualifier: 'HeaderDates', 
+      position: 10 },
+      
+    { id: 'HeaderCountry', 
+      purpose: #HEADER, 
+      type: #FIELDGROUP_REFERENCE, 
+      targetQualifier: 'HeaderCountry', 
+      position: 20 }
   ]
 
-  @UI: { lineItem:       [ { position: 10, label: 'Market ID' } ],
-         identification: [ { position: 10, label: 'Market ID' } ] }
-  mrktid;
+  /* 4. Поле ID с поиском и подсказкой (Action Point: Value Help + Search) */
+  @UI.hidden: true
+  mrkt_uuid; // Скрываем технический ID
 
-  @UI: { lineItem:       [ { position: 20, label: 'Confirmed' } ],
-         identification: [ { position: 20, label: 'Confirmed' } ] }
+  @UI: { 
+    lineItem:       [ { position: 10, label: 'Market', importance: #HIGH } ], 
+    selectionField: [ { position: 10 } ],                    // Делает поле доступным в панели поиска
+    fieldGroup:     [ { qualifier: 'BasicData', position: 10 } ] 
+  }
+  @Consumption.valueHelpDefinition: [{ entity: { name: 'ZAM_I_MARKET', element: 'mrktid' } }]
+  @UI.textArrangement: #TEXT_ONLY
+  mrktid;
+  
+  @UI.fieldGroup: [ { qualifier: 'HeaderCountry', position: 10 } ]
+  @EndUserText.label: 'Country'
+  MarketName;
+  /* 5. Поле статуса */
+  @UI: { 
+    lineItem:       [ { position: 20, criticality: 'StatusCriticality' },
+                      { type: #FOR_ACTION, dataAction: 'CONFIRM', label: 'Confirm' } ], 
+    identification: [ { type: #FOR_ACTION, dataAction: 'CONFIRM', label: 'Confirm' } ],
+    fieldGroup:     [ { qualifier: 'BasicData', position: 20, criticality: 'StatusCriticality' } ] 
+  }
+  @EndUserText.label: 'Confirmed?'
   status_confirm;
 
-  @UI: { lineItem:       [ { position: 30, label: 'Start Date' } ],
-         identification: [ { position: 30, label: 'Start Date' } ] }
+  /* Скрытое поле, которое хранит код цвета (1, 2 или 3) */
+  @UI.hidden: true
+  StatusCriticality;
+  /* 6. Даты */
+  @UI: { 
+    lineItem:       [ { position: 30, label: 'Start Date' } ],
+    fieldGroup:     [ { qualifier: 'BasicData', position: 30 },
+                      { qualifier: 'HeaderDates', position: 20 } ] 
+  }
+  @EndUserText.label: 'Start Date'
   start_date;
 
-  @UI: { lineItem:       [ { position: 40, label: 'End Date' } ],
-         identification: [ { position: 40, label: 'End Date' } ] }
+  @UI: { 
+    lineItem:       [ { position: 40, label: 'End Date' } ],
+    fieldGroup:     [ { qualifier: 'BasicData', position: 40 },
+                      { qualifier: 'HeaderDates', position: 10 } ] 
+  }
+  @EndUserText.label: 'End Date'
   end_date;
+  
+  /* Скрываем поле imageurl из списка, оно нужно только в заголовке */
+  @UI.hidden: true
+  imageurl;
+
+  /* 7. Системные поля во вкладке Admin Data (Action Point: System fields) */
+  
+  @UI.fieldGroup: [{ qualifier: 'AdminData', position: 10 }]
+  @EndUserText.label: 'Created By'
+  created_by;
+
+  @UI.fieldGroup: [{ qualifier: 'AdminData', position: 20 }]
+  @EndUserText.label: 'Created On'
+  creation_time;
+
+  @UI.fieldGroup: [{ qualifier: 'AdminData', position: 30 }]
+  @EndUserText.label: 'Changed By'
+  changed_by;
+
+  @UI.fieldGroup: [{ qualifier: 'AdminData', position: 40 }]
+  @EndUserText.label: 'Changed On'
+  change_time;
+  
+  @UI.hidden: true
+  prod_uuid;
 }

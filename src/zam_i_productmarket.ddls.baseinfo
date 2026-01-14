@@ -3,10 +3,12 @@
 {
 "FROM":
 [
+"ZAM_I_MARKET",
 "ZAM_D_MRKT_TRL"
 ],
 "ASSOCIATED":
 [
+"ZAM_I_MARKET",
 "ZAM_I_PRODUCT"
 ],
 "BASE":

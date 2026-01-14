@@ -35,9 +35,13 @@ annotate entity ZAM_C_PRODUCT with
   prod_uuid;
 
   @UI: {
-    lineItem:       [ { position: 10 }, { type: #FOR_ACTION, dataAction: 'MAKE_COPY', label: 'Copy' } ],
+    lineItem:       [ { position: 10 }, 
+                        { type: #FOR_ACTION, dataAction: 'MAKE_COPY', label: 'Copy' },
+                      { type: #FOR_ACTION, dataAction: 'MOVE_TO_NEXT_PHASE', label: 'Move to Next Phase' } ],
     selectionField: [ { position: 10 } ],
-    identification: [ { position: 10 }, { type: #FOR_ACTION, dataAction: 'MAKE_COPY', label: 'Copy' } ],
+    identification: [ { position: 10 }, 
+                        { type: #FOR_ACTION, dataAction: 'MAKE_COPY', label: 'Copy' },
+                      { type: #FOR_ACTION, dataAction: 'MOVE_TO_NEXT_PHASE', label: 'Move to Next Phase' } ],
     fieldGroup:     [ { qualifier: 'HeaderData', position: 10 }, { qualifier: 'BasicData', position: 10 } ]
   }
   prodid;

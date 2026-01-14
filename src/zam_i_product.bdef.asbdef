@@ -10,6 +10,7 @@ authorization master ( instance )
   create ( authorization : global );
   update;
   delete;
+  action ( features : instance ) MOVE_TO_NEXT_PHASE result [1] $self;
     determination SET_FIRST_PHASE on save {create;}
     validation VALIDATE_PG on save { create; field pgname; }
     validation VALIDATE_PRODID on save { create; field prodid; }
@@ -18,19 +19,41 @@ factory action MAKE_COPY parameter ZAM_A_COPY_PRODUCT [1];
   field ( readonly ) creation_time, created_by, change_time, changed_by;
   field ( mandatory ) pgname, price, price_currency;
   field ( mandatory : create, readonly : update ) prodid;
+  field ( readonly ) phase;
   association _Market { create; }
 }
 
 
 define behavior for ZAM_I_PRODUCTMARKET alias Market
+implementation in class ZAM_CL_BP_I_PROD_MRKT unique
 persistent table zam_d_mrkt_trl  // УБЕДИСЬ, ЧТО ИМЯ ТАБЛИЦЫ ВЕРНОЕ (из твоего словаря)
 lock dependent by _Product
 authorization dependent by _Product
 //etag master <поле_таймстампа_если_есть>
 {
+
   update;
   delete;
+  mapping for zam_d_mrkt_trl
+  {
+    mrkt_uuid      = mrkt_uuid;
+    prod_uuid      = prod_uuid;
+    mrktid         = mrktid;
+    status_confirm = status_confirm; // Проверь, что в таблице БД имя именно такое!
+    start_date     = start_date;
+    end_date       = end_date;
 
+    created_by     = created_by;
+    creation_time  = creation_time;
+    changed_by     = changed_by;
+    change_time    = change_time;
+  }
+    validation VALIDATE_MARKET on save { create; field mrktid; }
+  validation VALIDATE_START_DATE on save { create; field start_date; }
+  validation VALIDATE_END_DATE on save { create; field end_date; }
+  validation CHECK_DUPLICATES on save { create; field mrktid; }
+  action ( features : instance ) CONFIRM result [1] $self;
+  field ( readonly ) status_confirm;
   // Требование: MRKT_UUID read only и авто-генерация
   field ( readonly, numbering : managed ) mrkt_uuid;
 

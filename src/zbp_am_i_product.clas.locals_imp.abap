@@ -14,6 +14,11 @@ CLASS lhc_Product DEFINITION INHERITING FROM cl_abap_behavior_handler.
       IMPORTING keys FOR Product~VALIDATE_PRODID.
     METHODS MAKE_COPY FOR MODIFY
       IMPORTING keys FOR ACTION Product~MAKE_COPY.
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR Product RESULT result.
+
+    METHODS MOVE_TO_NEXT_PHASE FOR MODIFY
+      IMPORTING keys FOR ACTION Product~MOVE_TO_NEXT_PHASE RESULT result.
 
 ENDCLASS.
 
@@ -159,6 +164,90 @@ ENDMETHOD.
     MAPPED mapped
     FAILED failed
     REPORTED reported.
+  ENDMETHOD.
+
+  METHOD get_instance_features.
+  ENDMETHOD.
+
+  METHOD move_to_next_phase.
+    " Читаем данные продукта и связанных рынков
+    READ ENTITIES OF zam_i_product IN LOCAL MODE
+      ENTITY Product
+        ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_products)
+      ENTITY Product BY \_Market
+        ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_markets).
+
+    " Объявляем промежуточную таблицу для фильтрации рынков
+    DATA lt_my_markets LIKE lt_markets.
+
+    LOOP AT lt_products ASSIGNING FIELD-SYMBOL(<ls_product>).
+      CLEAR lt_my_markets.
+
+      " Фильтруем рынки для конкретного продукта
+      lt_my_markets = VALUE #( FOR m IN lt_markets
+                               WHERE ( prod_uuid = <ls_product>-prod_uuid )
+                               ( m ) ).
+
+      DATA(lv_next_phase) = <ls_product>-phase.
+      DATA(lv_error_text) = VALUE string( ).
+
+      CASE <ls_product>-phase.
+        WHEN 'PLAN'.
+          IF lines( lt_my_markets ) > 0.
+            lv_next_phase = 'DEV'.
+          ELSE.
+            lv_error_text = 'Product must have at least one assigned Market'.
+          ENDIF.
+
+        WHEN 'DEV'.
+          IF line_exists( lt_my_markets[ status_confirm = abap_true ] ).
+            lv_next_phase = 'PROD'.
+          ELSE.
+            lv_error_text = 'At least one market must be confirmed (Status Yes)'.
+          ENDIF.
+
+        WHEN 'PROD'.
+          DATA(lv_today) = cl_abap_context_info=>get_system_date( ).
+          DATA(lv_all_finished) = abap_true.
+
+          IF lines( lt_my_markets ) > 0.
+            LOOP AT lt_my_markets ASSIGNING FIELD-SYMBOL(<ls_market_row>).
+              IF <ls_market_row>-end_date > lv_today.
+                lv_all_finished = abap_false.
+                EXIT.
+              ENDIF.
+            ENDLOOP. " ИСПРАВЛЕНО: было LOOP, должно быть ENDLOOP
+
+            IF lv_all_finished = abap_true.
+              lv_next_phase = 'OUT'.
+            ELSE.
+              lv_error_text = 'All markets must be finished (End Date <= today)'.
+            ENDIF.
+          ELSE.
+            lv_error_text = 'No markets found to finish'.
+          ENDIF.
+      ENDCASE.
+
+      " Если есть ошибка - выводим её в reported
+      IF lv_error_text IS NOT INITIAL.
+        APPEND VALUE #( %tky = <ls_product>-%tky
+                        %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                      text     = lv_error_text ) ) TO reported-product.
+      ELSE.
+        " Если всё ок - обновляем фазу
+        MODIFY ENTITIES OF zam_i_product IN LOCAL MODE
+          ENTITY Product UPDATE FIELDS ( phase )
+          WITH VALUE #( ( %tky = <ls_product>-%tky phase = lv_next_phase ) ).
+      ENDIF.
+    ENDLOOP.
+
+    " Обновляем UI результатом
+    READ ENTITIES OF zam_i_product IN LOCAL MODE
+      ENTITY Product ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_updated).
+    result = VALUE #( FOR p IN lt_updated ( %tky = p-%tky %param = p ) ).
   ENDMETHOD.
 
 ENDCLASS.

@@ -10,6 +10,7 @@ define behavior for ZAM_C_PRODUCT alias Product
   field ( readonly ) phase;
 
   use association _Market { create; }
+  use action MOVE_TO_NEXT_PHASE;
 }
 
 define behavior for ZAM_C_MARKET alias Market
@@ -21,4 +22,6 @@ define behavior for ZAM_C_MARKET alias Market
   field ( readonly ) status_confirm;
 
   use association _Product;
+  use action CONFIRM;
+
 }
