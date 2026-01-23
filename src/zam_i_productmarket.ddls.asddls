@@ -4,6 +4,7 @@
 define view entity ZAM_I_PRODUCTMARKET as select from zam_d_mrkt_trl
 association [0..1] to ZAM_I_MARKET as _MarketInfo on $projection.mrktid = _MarketInfo.mrktid
 association to parent ZAM_I_PRODUCT as _Product on $projection.prod_uuid = _Product.prod_uuid
+composition [0..*] of ZAM_I_MRKT_ORDER as _Order
 {
   key mrkt_uuid,
   prod_uuid,
@@ -29,5 +30,6 @@ association to parent ZAM_I_PRODUCT as _Product on $projection.prod_uuid = _Prod
   change_time,
   _MarketInfo.imageurl as imageurl,
   _Product,
-  _MarketInfo
+  _MarketInfo,
+  _Order
 }

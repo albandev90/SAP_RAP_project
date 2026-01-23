@@ -1,35 +1,66 @@
 managed implementation in class zbp_am_i_product unique;
 strict ( 2 );
+with draft; // 1. Включаем режим черновиков
 
 define behavior for ZAM_I_PRODUCT alias Product
 persistent table zam_d_product
-lock master
+draft table zam_d_prod_d
+lock master total etag change_time // ЭТАГ важен для черновиков
 authorization master ( instance )
-
 {
   create ( authorization : global );
   update;
   delete;
+  draft action Edit;
+  draft action Activate;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare
+  {
+    validation VALIDATE_PG;
+    validation VALIDATE_PRODID;
+    validation VALIDATE_DATA;
+
+    // Также рекомендуется добавить валидации из Market и Order,
+    // чтобы они срабатывали при сохранении всего Продукта
+    validation Market~VALIDATE_MARKET;
+    validation Market~VALIDATE_START_DATE;
+    validation Market~VALIDATE_END_DATE;
+    validation Market~CHECK_DUPLICATES;
+    validation MrktOrder~VALIDATE_DELIVERY_DATE;
+  }
   action ( features : instance ) MOVE_TO_NEXT_PHASE result [1] $self;
     determination SET_FIRST_PHASE on save {create;}
     validation VALIDATE_PG on save { create; field pgname; }
     validation VALIDATE_PRODID on save { create; field prodid; }
+    validation VALIDATE_DATA on save { create; update; field price, height, width, depth, sizam_uom; }
 factory action MAKE_COPY parameter ZAM_A_COPY_PRODUCT [1];
   field ( readonly, numbering : managed ) prod_uuid;
   field ( readonly ) creation_time, created_by, change_time, changed_by;
-  field ( mandatory ) pgname, price, price_currency;
-  field ( mandatory : create, readonly : update ) prodid;
+
   field ( readonly ) phase;
-  association _Market { create; }
+
+  field ( features : instance )
+    prodid,
+    pgname,
+    height,
+    depth,
+    width,
+    price,
+    sizam_uom,
+    price_currency,
+    taxrate;
+  association _Market { create; with draft;}
 }
 
 
 define behavior for ZAM_I_PRODUCTMARKET alias Market
 implementation in class ZAM_CL_BP_I_PROD_MRKT unique
 persistent table zam_d_mrkt_trl  // УБЕДИСЬ, ЧТО ИМЯ ТАБЛИЦЫ ВЕРНОЕ (из твоего словаря)
+draft table zam_d_mrkt_d
 lock dependent by _Product
 authorization dependent by _Product
-//etag master <поле_таймстампа_если_есть>
+etag master change_time //<поле_таймстампа_если_есть>
 {
 
   update;
@@ -53,6 +84,8 @@ authorization dependent by _Product
   validation VALIDATE_END_DATE on save { create; field end_date; }
   validation CHECK_DUPLICATES on save { create; field mrktid; }
   action ( features : instance ) CONFIRM result [1] $self;
+
+  association _Order { create( features : instance ); with draft; }
   field ( readonly ) status_confirm;
   // Требование: MRKT_UUID read only и авто-генерация
   field ( readonly, numbering : managed ) mrkt_uuid;
@@ -66,5 +99,64 @@ authorization dependent by _Product
   // Поле связи с родителем
   field ( readonly ) prod_uuid;
 
-  association _Product;
+  association _Product{ with draft; }
+}
+
+define behavior for ZAM_I_MRKT_ORDER alias MrktOrder
+implementation in class ZAM_CL_BP_I_MRKT_ORDER unique
+persistent table zam_d_mrkt_order
+draft table zam_d_ord_d
+lock dependent by _Product
+authorization dependent by _Product
+//etag master <поле_таймстампа> // Если есть поле для контроля версий
+{
+  update;
+  delete;
+
+  // Маппинг полей между CDS и таблицей БД
+  mapping for zam_d_mrkt_order
+  {
+    order_uuid    = order_uuid;
+    mrkt_uuid     = mrkt_uuid;
+    prod_uuid     = prod_uuid;
+    orderid       = orderid;
+    quantity      = quantity;
+    calendar_year = calendar_year;
+    delivery_date = delivery_date;
+    netamount     = netamount;
+    grossamount   = grossamount;
+    amountcurr    = amountcurr;
+    created_by    = created_by;
+    creation_time = creation_time;
+    changed_by    = changed_by;
+    change_time   = change_time;
+  }
+
+  // Поля, которые управляются системой или родителем
+  field ( readonly, numbering : managed ) order_uuid;
+
+  // 2. Все поля, которые заполняются системой или методами, делаем READONLY
+  field ( readonly )
+    prod_uuid,
+    mrkt_uuid,
+    orderid,          // Теперь система не просит вводить его руками
+    calendar_year,    // Заполнится методом SET_CALENDAR_YEAR
+    netamount,        // Заполнится методом CALCULATE_AMOUNT
+    grossamount,      // Заполнится методом CALCULATE_AMOUNT
+    amountcurr,       // Заполнится методом CALCULATE_AMOUNT
+    creation_time,
+    created_by,
+    change_time,
+    changed_by;
+
+  // Обязательные поля при создании
+  field ( mandatory ) delivery_date, quantity;
+
+
+  determination CALCULATE_ORDERID on modify { create; }
+  determination SET_CALENDAR_YEAR on modify { field delivery_date; }
+  determination CALCULATE_AMOUNT  on modify { field quantity; }
+  validation VALIDATE_DELIVERY_DATE on save { create; update; field delivery_date; }
+  association _Product{ with draft; }
+  association _Market{ with draft; }
 }

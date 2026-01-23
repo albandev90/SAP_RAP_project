@@ -61,7 +61,15 @@ annotate view ZAM_C_MARKET with
       purpose: #HEADER, 
       type: #FIELDGROUP_REFERENCE, 
       targetQualifier: 'HeaderCountry', 
-      position: 20 }
+      position: 20 },
+      {
+    id:            'Orders',
+    purpose:       #STANDARD,
+    type:          #LINEITEM_REFERENCE,
+    label:         'Orders',
+    position:      40,            // Позиция вкладки
+    targetElement: '_Order'      // Имя ассоциации из CDS
+  }
   ]
 
   /* 4. Поле ID с поиском и подсказкой (Action Point: Value Help + Search) */

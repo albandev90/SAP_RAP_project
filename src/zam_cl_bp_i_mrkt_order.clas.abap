@@ -1,0 +1,5 @@
+CLASS zam_cl_bp_i_mrkt_order DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF zam_i_product.
+ENDCLASS.
+
+CLASS zam_cl_bp_i_mrkt_order IMPLEMENTATION.
+ENDCLASS.

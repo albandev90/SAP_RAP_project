@@ -156,6 +156,7 @@ CLASS lhc_Market IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_instance_features.
+    " Читаем статус подтверждения рынка
     READ ENTITIES OF zam_i_product IN LOCAL MODE
       ENTITY Market
         FIELDS ( status_confirm ) WITH CORRESPONDING #( keys )
@@ -163,10 +164,17 @@ CLASS lhc_Market IMPLEMENTATION.
 
     result = VALUE #( FOR ls_market IN lt_markets
       ( %tky = ls_market-%tky
-        " Условие активности кнопки
+
+        " 1. Управление кнопкой CONFIRM (уже было у тебя)
         %action-confirm = COND #( WHEN ls_market-status_confirm = abap_true
                                   THEN if_abap_behv=>fc-o-disabled
                                   ELSE if_abap_behv=>fc-o-enabled )
+
+        " 2. Управление созданием заказов (Новое по заданию 1.4.2)
+        " Если статус НЕ 'X' (не подтвержден) -> создание заблокировано (disabled)
+        %assoc-_Order   = COND #( WHEN ls_market-status_confirm = abap_true
+                                  THEN if_abap_behv=>fc-o-enabled
+                                  ELSE if_abap_behv=>fc-o-disabled )
       ) ).
   ENDMETHOD.
 

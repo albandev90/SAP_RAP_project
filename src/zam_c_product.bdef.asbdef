@@ -1,5 +1,6 @@
 projection;
 strict ( 2 );
+use draft; // Включаем в проекции
 
 define behavior for ZAM_C_PRODUCT alias Product
 {
@@ -9,8 +10,16 @@ define behavior for ZAM_C_PRODUCT alias Product
   use action MAKE_COPY;
   field ( readonly ) phase;
 
-  use association _Market { create; }
+  use action Edit;
+  use action Activate;
+  use action Discard;
+  use action Resume;
+  use action Prepare;
+
+  use association _Market { create; with draft; }
   use action MOVE_TO_NEXT_PHASE;
+
+  side effects { action MOVE_TO_NEXT_PHASE affects field ( phase); }
 }
 
 define behavior for ZAM_C_MARKET alias Market
@@ -21,7 +30,18 @@ define behavior for ZAM_C_MARKET alias Market
   // ТРЕБОВАНИЕ ЗАДАНИЯ: Статус только для чтения в проекции
   field ( readonly ) status_confirm;
 
-  use association _Product;
+  use association _Product{ with draft; }
   use action CONFIRM;
+  use association _Order { create; with draft;}
 
+}
+
+define behavior for ZAM_C_MRKT_ORDER alias MrktOrder
+{
+  use update;
+  use delete;
+  field ( readonly ) amountcurr, netamount, grossamount, calendar_year;
+  field ( readonly ) orderid;
+  use association _Product{ with draft; }
+  use association _Market{ with draft; }
 }

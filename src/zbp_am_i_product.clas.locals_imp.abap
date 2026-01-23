@@ -19,6 +19,8 @@ CLASS lhc_Product DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS MOVE_TO_NEXT_PHASE FOR MODIFY
       IMPORTING keys FOR ACTION Product~MOVE_TO_NEXT_PHASE RESULT result.
+    METHODS VALIDATE_DATA FOR VALIDATE ON SAVE
+      IMPORTING keys FOR Product~VALIDATE_DATA.
 
 ENDCLASS.
 
@@ -167,7 +169,53 @@ ENDMETHOD.
   ENDMETHOD.
 
   METHOD get_instance_features.
-  ENDMETHOD.
+  " 1. Читаем фазу для каждой записи
+  READ ENTITIES OF zam_i_product IN LOCAL MODE
+    ENTITY Product
+      FIELDS ( phase ) WITH CORRESPONDING #( keys )
+    RESULT DATA(lt_products).
+
+  LOOP AT lt_products INTO DATA(ls_product).
+    " Определяем состояние полей в зависимости от фазы
+    CASE ls_product-phase.
+
+      WHEN 'PLAN'. " Согласно image_8d868c.png
+        APPEND VALUE #( %tky = ls_product-%tky
+                        %field-prodid = if_abap_behv=>fc-f-mandatory
+                        %field-pgname = if_abap_behv=>fc-f-mandatory
+                      ) TO result.
+
+      WHEN 'DEV'. " Поля размеров и цены становятся обязательными
+        APPEND VALUE #( %tky = ls_product-%tky
+                        %field-prodid = if_abap_behv=>fc-f-read_only
+                        %field-pgname = if_abap_behv=>fc-f-read_only
+                        %field-height         = if_abap_behv=>fc-f-mandatory
+                        %field-depth          = if_abap_behv=>fc-f-mandatory
+                        %field-width          = if_abap_behv=>fc-f-mandatory
+                        %field-sizam_uom       = if_abap_behv=>fc-f-mandatory
+                        %field-price          = if_abap_behv=>fc-f-mandatory
+                        %field-price_currency = if_abap_behv=>fc-f-mandatory
+                        %field-taxrate        = if_abap_behv=>fc-f-mandatory
+                      ) TO result.
+
+      WHEN 'PROD' OR 'OUT'.
+          APPEND VALUE #(
+              %tky = ls_product-%tky
+
+              " Переводим АБСОЛЮТНО ВСЕ бизнес-поля в режим Read Only
+              %field-prodid         = if_abap_behv=>fc-f-read_only
+              %field-pgname         = if_abap_behv=>fc-f-read_only
+              %field-height         = if_abap_behv=>fc-f-read_only
+              %field-depth          = if_abap_behv=>fc-f-read_only
+              %field-width          = if_abap_behv=>fc-f-read_only
+              %field-sizam_uom      = if_abap_behv=>fc-f-read_only
+              %field-price          = if_abap_behv=>fc-f-read_only
+              %field-price_currency = if_abap_behv=>fc-f-read_only
+              %field-taxrate        = if_abap_behv=>fc-f-read_only
+          ) TO result.
+    ENDCASE.
+  ENDLOOP.
+ENDMETHOD.
 
   METHOD move_to_next_phase.
     " Читаем данные продукта и связанных рынков
@@ -248,6 +296,55 @@ ENDMETHOD.
       ENTITY Product ALL FIELDS WITH CORRESPONDING #( keys )
       RESULT DATA(lt_updated).
     result = VALUE #( FOR p IN lt_updated ( %tky = p-%tky %param = p ) ).
+  ENDMETHOD.
+
+  METHOD validate_data.
+    " Читаем данные продукта
+    READ ENTITIES OF zam_i_product IN LOCAL MODE
+      ENTITY Product
+        FIELDS ( phase price height width depth sizam_uom ) WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_products).
+
+    LOOP AT lt_products INTO DATA(ls_product).
+      " Проверки выполняются для фаз DEV, PROD и OUT
+      IF ls_product-phase = 'DEV' OR ls_product-phase = 'PROD' OR ls_product-phase = 'OUT'.
+
+        " 1. Проверка Цены
+        IF ls_product-price <= 0.
+          APPEND VALUE #( %tky = ls_product-%tky ) TO failed-product.
+          APPEND VALUE #( %tky = ls_product-%tky
+                          %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                        text = 'Price must be greater than 0 in DEV phase' )
+                          %element-price = if_abap_behv=>mk-on ) TO reported-product.
+        ENDIF.
+
+        " 2. Групповая проверка размеров (Height, Width, Depth)
+        IF ls_product-height <= 0 OR ls_product-width <= 0 OR ls_product-depth <= 0.
+          APPEND VALUE #( %tky = ls_product-%tky ) TO failed-product.
+
+          " Мы привязываем ошибку к тому полю, которое пустое
+          DATA(lv_msg) = 'Dimensions (Height, Width, Depth) must be greater than 0'.
+
+          APPEND VALUE #( %tky = ls_product-%tky
+                          %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                        text = lv_msg )
+                          " Подсвечиваем все три поля, если хотя бы одно не заполнено
+                          %element-height = if_abap_behv=>mk-on
+                          %element-width  = if_abap_behv=>mk-on
+                          %element-depth  = if_abap_behv=>mk-on ) TO reported-product.
+        ENDIF.
+
+        " 3. Проверка единицы измерения (Unit of Measure)
+        IF ls_product-sizam_uom IS INITIAL.
+          APPEND VALUE #( %tky = ls_product-%tky ) TO failed-product.
+          APPEND VALUE #( %tky = ls_product-%tky
+                          %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                        text = 'Unit of measure is mandatory' )
+                          %element-sizam_uom = if_abap_behv=>mk-on ) TO reported-product.
+        ENDIF.
+
+      ENDIF.
+    ENDLOOP.
   ENDMETHOD.
 
 ENDCLASS.

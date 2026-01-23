@@ -25,6 +25,6 @@ define view entity ZAM_C_MARKET
     changed_by,
     change_time,
    
-    _Product : redirected to parent ZAM_C_PRODUCT
-    
+    _Product : redirected to parent ZAM_C_PRODUCT,
+    _Order : redirected to composition child ZAM_C_MRKT_ORDER
 }

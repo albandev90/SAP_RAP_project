@@ -1,0 +1,74 @@
+@Metadata.layer: #CORE
+@UI: {
+  headerInfo: {
+    typeName: 'Order',
+    typeNamePlural: 'Orders',
+    title: { type: #STANDARD, value: 'orderid' }
+  },
+  // Action Point: Set the default sorting by DELIVERY_DATE
+  presentationVariant: [{ sortOrder: [{ by: 'delivery_date', direction: #DESC }] }]
+}
+@Search.searchable: true
+annotate view ZAM_C_MRKT_ORDER with
+{
+  /* Action Point: Настройка вкладок (Pic 4 и 5) */
+  @UI.facet: [
+    { id: 'GeneralInfo', type: #COLLECTION, label: 'General Information', position: 10 },
+    { id: 'BasicData', parentId: 'GeneralInfo', type: #FIELDGROUP_REFERENCE, 
+      targetQualifier: 'BasicData', label: 'Basic Data', position: 10 },
+      
+    { id: 'AdminData', type: #FIELDGROUP_REFERENCE, 
+      targetQualifier: 'AdminData', label: 'Admin Data', position: 20 }
+  ]
+
+  /* Поля данных и поиск */
+  @UI: { lineItem:       [ { position: 10 } ],
+         fieldGroup:     [ { qualifier: 'BasicData', position: 10 } ],
+         selectionField: [ { position: 10 } ] } // Action Point: Search/Selection Fields
+         @Search.defaultSearchElement: true
+  orderid;
+
+  @UI: { lineItem:       [ { position: 20 } ],
+         fieldGroup:     [ { qualifier: 'BasicData', position: 20 } ] }
+  calendar_year;
+
+  @UI: { lineItem:       [ { position: 30 } ],
+         fieldGroup:     [ { qualifier: 'BasicData', position: 30 } ],
+         selectionField: [ { position: 20 } ] }
+  delivery_date;
+
+  @UI: { lineItem:       [ { position: 40 } ],
+         fieldGroup:     [ { qualifier: 'BasicData', position: 40 } ] }
+  quantity;
+
+  /* Action Point: Суммы в Header (Pic 4) */
+  @UI: { lineItem:       [ { position: 50 } ],
+         dataPoint:      { title: 'Net Amount' } }
+  netamount;
+
+  @UI: { lineItem:       [ { position: 60 } ],
+         dataPoint:      { title: 'Gross Amount' } }
+  grossamount;
+
+  /* Action Point: Mark system fields (Admin Data Pic 5) */
+  @UI.fieldGroup: [ { qualifier: 'AdminData', position: 10, label: 'Created By' } ]
+  created_by;
+
+  @UI.fieldGroup: [ { qualifier: 'AdminData', position: 20, label: 'Create Time' } ]
+  creation_time;
+
+  @UI.fieldGroup: [ { qualifier: 'AdminData', position: 30, label: 'Changed By' } ]
+  changed_by;
+
+  @UI.fieldGroup: [ { qualifier: 'AdminData', position: 40, label: 'Change Time' } ]
+  change_time;
+
+  @UI.hidden: true
+  prod_uuid;
+  @UI.hidden: true
+  mrkt_uuid;
+  @UI.hidden: true
+  order_uuid;
+  @UI: { lineItem: [ { position: 70 } ] } // Оставь это, если хочешь видеть USD в списке заказов
+  amountcurr;
+}
