@@ -121,6 +121,18 @@ annotate view ZAM_C_MARKET with
   /* Скрываем поле imageurl из списка, оно нужно только в заголовке */
   @UI.hidden: true
   imageurl;
+  
+  @UI.lineItem: [ { position: 50, importance: #HIGH, label: 'Total Quantity' } ]
+  TotalQuantity;
+
+  @UI.lineItem: [ { position: 60, importance: #HIGH, label: 'Total Net Amount' } ]
+  TotalNetAmount;
+
+  @UI.lineItem: [ { position: 70, importance: #HIGH, label: 'Total Gross Amount' } ]
+  TotalGrossAmount;
+
+  @UI.hidden: true // Валюту скрываем из колонок, она сама приклеится к суммам
+  TotalAmountCurrency;
 
   /* 7. Системные поля во вкладке Admin Data (Action Point: System fields) */
   

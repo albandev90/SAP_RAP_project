@@ -65,6 +65,9 @@ etag master change_time //<поле_таймстампа_если_есть>
 
   update;
   delete;
+
+  //field ( readonly ) TotalQuantity, TotalNetAmount, TotalGrossAmount, TotalAmountCurrency;
+
   mapping for zam_d_mrkt_trl
   {
     mrkt_uuid      = mrkt_uuid;

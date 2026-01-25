@@ -19,6 +19,17 @@ define view entity ZAM_C_MARKET
     start_date,
     end_date,
     
+    /* Тотальные поля для отображения (Pic 3) */
+    TotalQuantity,
+    
+    @Semantics.amount.currencyCode: 'TotalAmountCurrency'
+    TotalNetAmount,
+    
+    @Semantics.amount.currencyCode: 'TotalAmountCurrency'
+    TotalGrossAmount,
+    
+    TotalAmountCurrency,
+    
     imageurl,
     created_by,
     creation_time,
