@@ -14,6 +14,9 @@
     ]
   }]
 }
+
+
+
 annotate entity ZAM_C_PRODUCT with
 {
   /* --- ОПРЕДЕЛЕНИЕ ФАСЕТОВ (ВКЛАДОК) --- */
@@ -26,8 +29,25 @@ annotate entity ZAM_C_PRODUCT with
     { id: 'SizesFacet', parentId: 'GeneralInfo', type: #FIELDGROUP_REFERENCE, label: 'Size Dimensions', targetQualifier: 'Sizes', position: 20 },
     { id: 'PricesFacet', parentId: 'GeneralInfo', type: #FIELDGROUP_REFERENCE, label: 'Price Details', targetQualifier: 'Prices', position: 30 },
     { id: 'AdminFacet', type: #FIELDGROUP_REFERENCE, label: 'Admin Information', position: 50, targetQualifier: 'AdminData' },
-    { id: 'MarketFacet', type: #LINEITEM_REFERENCE, label: 'Markets', position: 40, targetElement: '_Market' }
+    { id: 'MarketFacet', type: #LINEITEM_REFERENCE, label: 'Markets', position: 40, targetElement: '_Market' },
+    { 
+      id:              'MarketQtyFacet', 
+      type:            #CHART_REFERENCE, 
+      label:           'Market Quantity', 
+      position:        60, 
+      targetElement:   '_Market',           // Идем в Market
+      targetQualifier: 'MarketQtyDonut'     // Ищем там график с этим именем
+    },
+    { 
+      id:              'MarketAmountFacet', 
+      type:            #CHART_REFERENCE, 
+      label:           'Market Amount', 
+      position:        70, 
+      targetElement:   '_Market',           // Идем в Market
+      targetQualifier: 'MarketAmountBar'    // Ищем там график с этим именем
+    }
   ]
+
 
   /* --- НАСТРОЙКИ ПОЛЕЙ --- */
 

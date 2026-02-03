@@ -9,8 +9,28 @@
   presentationVariant: [{ sortOrder: [{ by: 'delivery_date', direction: #DESC }] }]
 }
 @Search.searchable: true
+
+@UI.chart: [{
+    title:            'Order Quantity by Delivery Date',
+    chartType:        #BAR,
+    dimensions:       [ 'delivery_date' ],
+    measures:         [ 'quantity' ],
+    description:      'Visualizes quantity distribution',
+    qualifier:        'QuantityChart'  // ИСПОЛЬЗУЕМ qualifier ВМЕСТО id
+},
+{
+    title:            'Order Amounts by Delivery Date',
+    chartType:        #BAR,
+    dimensions:       [ 'delivery_date' ],
+    measures:         [ 'netamount', 'grossamount' ], // Сразу два показателя!
+    description:      'Net vs Gross Amount comparison',
+    qualifier:        'AmountChart' // Уникальное имя для второго графика
+  }
+]
+
 annotate view ZAM_C_MRKT_ORDER with
 {
+
   /* Action Point: Настройка вкладок (Pic 4 и 5) */
   @UI.facet: [
     { id: 'GeneralInfo', type: #COLLECTION, label: 'General Information', position: 10 },
@@ -35,10 +55,12 @@ annotate view ZAM_C_MRKT_ORDER with
   @UI: { lineItem:       [ { position: 30 } ],
          fieldGroup:     [ { qualifier: 'BasicData', position: 30 } ],
          selectionField: [ { position: 20 } ] }
+  
   delivery_date;
 
   @UI: { lineItem:       [ { position: 40 } ],
          fieldGroup:     [ { qualifier: 'BasicData', position: 40 } ] }
+  
   quantity;
 
   /* Action Point: Суммы в Header (Pic 4) */

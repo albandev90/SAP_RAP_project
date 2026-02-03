@@ -17,8 +17,48 @@
   }]
 }
 
+@UI.chart: [
+  // --- ГРАФИКИ ДЛЯ СТРАНИЦЫ РЫНКА (Показывают Заказы) ---
+  {
+    qualifier:        'QuantityChart',
+    title:            'Order Quantity by Date',
+    chartType:        #BAR,
+    dimensions:       [ 'end_date' ],
+    measures:         [ 'TotalQuantity' ]
+  },
+  {
+    qualifier:        'AmountChart',
+    title:            'Order Amounts by Date',
+    chartType:        #COLUMN,
+    dimensions:       [ 'end_date' ],
+    measures:         [ 'TotalNetAmount', 'TotalGrossAmount' ]
+  },
+
+  // --- ГРАФИКИ ДЛЯ СТРАНИЦЫ ПРОДУКТА (Показывают Рынки) ---
+  // Pic 4: Пончик
+  {
+    qualifier:        'MarketQtyDonut',    // Продукт ищет это имя!
+    title:            'Quantity Distribution',
+    chartType:        #DONUT,
+    dimensions:       [ 'MarketName' ],    // Берем имя страны
+    measures:         [ 'TotalQuantity' ], // Берем общее кол-во
+    description:      'Share by Market'
+  },
+  // Pic 5: Столбики
+  {
+    qualifier:        'MarketAmountBar',   // Продукт ищет это имя!
+    title:            'Revenue by Market',
+    chartType:        #BAR,
+    dimensions:       [ 'MarketName' ],
+    measures:         [ 'TotalNetAmount' ],
+    description:      'Net Amount comparison'
+  }
+]
+
 annotate view ZAM_C_MARKET with 
 {
+
+    
   /* 3. Структура вкладок (Action Point: General + Admin Data) */
   @UI.facet: [
     /* Главная вкладка "General Information" */
@@ -62,14 +102,34 @@ annotate view ZAM_C_MARKET with
       type: #FIELDGROUP_REFERENCE, 
       targetQualifier: 'HeaderCountry', 
       position: 20 },
-      {
-    id:            'Orders',
+      
+      
+    { id:            'Orders',
     purpose:       #STANDARD,
     type:          #LINEITEM_REFERENCE,
     label:         'Orders',
     position:      40,            // Позиция вкладки
     targetElement: '_Order'      // Имя ассоциации из CDS
-  }
+  },
+  
+  { 
+        id:              'ChartFacet', 
+        purpose:         #STANDARD,
+        type:            #CHART_REFERENCE,   // Указываем тип: Ссылка на график
+        label:           'Order Quantity Chart', 
+        position:        50, 
+        targetElement:   '_Order',           // Идем в ассоциацию заказов
+        targetQualifier: 'QuantityChart'      // Ищем там qualifier: 'QuantityChart'
+      },
+      { 
+      id:              'AmountChartFacet', 
+      purpose:         #STANDARD,
+      type:            #CHART_REFERENCE,
+      label:           'Order Amount', 
+      position:        60,                 // Следующая позиция после 50
+      targetElement:   '_Order',
+      targetQualifier: 'AmountChart'       // Ссылка на второй qualifier
+    }
   ]
 
   /* 4. Поле ID с поиском и подсказкой (Action Point: Value Help + Search) */

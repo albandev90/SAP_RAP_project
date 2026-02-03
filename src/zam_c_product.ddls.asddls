@@ -45,6 +45,6 @@ define root view entity ZAM_C_PRODUCT
     -- Алиас для картинки
     _ProductGroup.imageurl as ProductGroupImage,
     
-    -- Редирект ассоциаций
+
     _Market : redirected to composition child ZAM_C_MARKET
 }

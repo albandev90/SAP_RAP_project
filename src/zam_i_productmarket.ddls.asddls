@@ -6,6 +6,7 @@ association [0..1] to ZAM_I_MARKET as _MarketInfo on $projection.mrktid = _Marke
 association to parent ZAM_I_PRODUCT as _Product on $projection.prod_uuid = _Product.prod_uuid
 association [1..1] to ZAM_I_MARKET_SUM as _MarketSum on $projection.mrkt_uuid = _MarketSum.mrkt_uuid
 composition [0..*] of ZAM_I_MRKT_ORDER as _Order
+
 {
   key mrkt_uuid,
   prod_uuid,
@@ -18,8 +19,8 @@ composition [0..*] of ZAM_I_MRKT_ORDER as _Order
     when 'X' then 3 // Если подтверждено (Yes) -> Зеленый
     else 1          // Если нет (No) -> Красный
   end as StatusCriticality,
-  start_date,
-  end_date,
+   start_date,
+   end_date,
   
   @Semantics.user.createdBy: true
   created_by,
