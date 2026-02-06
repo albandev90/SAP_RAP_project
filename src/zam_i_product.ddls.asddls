@@ -7,6 +7,8 @@ association [0..1] to ZAM_I_PG as _ProductGroup on $projection.pgname = _Product
 association [0..1] to ZAM_I_PHASE as _Phase on $projection.phase = _Phase.phaseid
 association [0..1] to ZAM_I_UOM as _UOM on $projection.sizam_uom = _UOM.msehi
 composition [0..*] of ZAM_I_PRODUCTMARKET as _Market
+association [0..1] to ZAM_C_PRODUCT_ANALYZE as _ProductAnalyze 
+    on $projection.prodid = _ProductAnalyze.ProdId
 {
  key prod_uuid,
  @Search.defaultSearchElement: true 
@@ -32,6 +34,21 @@ composition [0..*] of ZAM_I_PRODUCTMARKET as _Market
       when 'PROD' then 3 
       else 0 
     end as PhaseCriticality,
+    /* 1. Вычисляем процент (Имитация данных) */
+    case phase
+      when 'PLAN' then 20
+      when 'DEV'  then 60
+      when 'PROD' then 95
+      else 0 
+    end as IncomePercentage,
+
+    /* 2. Цвет полоски (1-Красный, 2-Желтый, 3-Зеленый) */
+    case phase
+      when 'PLAN' then 1
+      when 'DEV'  then 2
+      when 'PROD' then 3
+      else 0 
+    end as IncomePercentageCriticality,
     @Semantics.user.createdBy: true
     created_by,
     @Semantics.systemDateTime.createdAt: true
@@ -43,5 +60,6 @@ composition [0..*] of ZAM_I_PRODUCTMARKET as _Market
   _ProductGroup,
   _Phase,
   _UOM,
-  _Market
+  _Market,
+  _ProductAnalyze
 }

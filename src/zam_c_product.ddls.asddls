@@ -8,7 +8,14 @@ define root view entity ZAM_C_PRODUCT
   as projection on ZAM_I_PRODUCT
 {
     key prod_uuid,
-    
+    // 1. Указываем, откуда брать данные для окна (через ассоциацию, которую мы создали)
+    @ObjectModel.foreignKey.association: '_ProductAnalyze'
+
+    // 2. Превращаем текст в ссылку (Имя должно совпадать с тем, что в ZAM_C_PRODUCT_ANALYZE)
+   @Consumption: {
+        semanticObject: 'ProductAnalyze',
+        semanticObjectMapping.element: 'ProdId' // <--- ДОБАВЬТЕ ЭТУ СТРОКУ
+    }
     @Search.defaultSearchElement: true
     prodid,
     
@@ -44,7 +51,12 @@ define root view entity ZAM_C_PRODUCT
     
     -- Алиас для картинки
     _ProductGroup.imageurl as ProductGroupImage,
+        
+IncomePercentage,
     
+    @UI.hidden: true     // Это можно оставить здесь, так как это техническое скрытие
+    IncomePercentageCriticality,
 
-    _Market : redirected to composition child ZAM_C_MARKET
+       _Market : redirected to composition child ZAM_C_MARKET,
+    _ProductAnalyze
 }

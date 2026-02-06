@@ -1,0 +1,37 @@
+@Metadata.layer: #CORE
+annotate view ZAM_C_PRODUCT_ANALYZE with
+{
+  /* 1. СТРУКТУРА ОКНА (FACETS) */
+  @UI.facet: [
+    {
+        // Первая группа: Основная информация
+        purpose:         #QUICK_VIEW,              // <--- Говорим системе: "Это для всплывающего окна"
+        type:            #FIELDGROUP_REFERENCE,
+        targetQualifier: 'BasicInfo',              // ID группы (запомните его)
+        label:           'Product Info'
+    },
+    {
+        // Вторая группа: Финансы (или Аналитика)
+        purpose:         #QUICK_VIEW,
+        type:            #FIELDGROUP_REFERENCE,
+        targetQualifier: 'Financials',             // ID второй группы
+        label:           'Financial Data'
+    }
+  ]
+
+  /* 2. ПРИВЯЗКА ПОЛЕЙ К ГРУППАМ */
+  
+  // ID Продукта -> в группу 'BasicInfo'
+  @UI.fieldGroup: [{ qualifier: 'BasicInfo', position: 10, label: 'Product ID' }]
+  ProdId;
+
+  // Имя Продукта -> в группу 'BasicInfo'
+  @UI.fieldGroup: [{ qualifier: 'BasicInfo', position: 20, label: 'Product Name' }]
+  ProductName;
+
+  // Цена -> в группу 'Financials'
+  @UI.fieldGroup: [{ qualifier: 'Financials', position: 10, label: 'Price' }]
+  Price;
+  
+  // Если у вас есть другие поля (Phase, Quantity и т.д.), добавьте их сюда так же
+}
