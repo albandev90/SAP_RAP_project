@@ -52,11 +52,21 @@ define root view entity ZAM_C_PRODUCT
     -- Алиас для картинки
     _ProductGroup.imageurl as ProductGroupImage,
         
-IncomePercentage,
+@UI.dataPoint: { 
+        qualifier: 'IncomePercentage',      
+        targetValue: 100, 
+        visualization: #PROGRESS, 
+        criticality: 'IncomePercentageCriticality',
+        title: 'Completion'
+    }
+    @UI.lineItem: [{ position: 70, type: #AS_DATAPOINT, label: 'Income KPI' }]
+    IncomePercentage,
     
-    @UI.hidden: true     // Это можно оставить здесь, так как это техническое скрытие
+    @UI.hidden: true
     IncomePercentageCriticality,
-
+   Measures,
+   _CreatedByContact,
+  _ChangedByContact,
        _Market : redirected to composition child ZAM_C_MARKET,
     _ProductAnalyze
 }

@@ -39,7 +39,7 @@ factory action MAKE_COPY parameter ZAM_A_COPY_PRODUCT [1];
   field ( readonly ) creation_time, created_by, change_time, changed_by;
 
   field ( readonly ) phase;
-
+field ( readonly ) Measures;
   field ( features : instance )
     prodid,
     pgname,

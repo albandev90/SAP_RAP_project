@@ -72,17 +72,29 @@ annotate entity ZAM_C_PRODUCT with
   @Consumption.valueHelpDefinition: [{ entity: { name: 'ZAM_I_PG', element: 'pgname' } }]
   pgname;
 
-  @UI.fieldGroup: [ { qualifier: 'Sizes', position: 10 } ]
+  @UI.fieldGroup: [ { qualifier: 'Sizes', position: 10 },       // Для Детальной страницы (оставляем)
+      { qualifier: 'AllMeasures', position: 10 } ]
   @EndUserText.label: 'Height'
   height;
 
-  @UI.fieldGroup: [ { qualifier: 'Sizes', position: 20 } ]
+  @UI.fieldGroup: [ { qualifier: 'Sizes', position: 20 },
+      { qualifier: 'AllMeasures', position: 20 } ]
   @EndUserText.label: 'Depth'
   depth;
 
-  @UI.fieldGroup: [ { qualifier: 'Sizes', position: 30 } ]
+  @UI.fieldGroup: [ { qualifier: 'Sizes', position: 30 },
+      { qualifier: 'AllMeasures', position: 30 } ]
   @EndUserText.label: 'Width'
   width;
+
+  @UI.lineItem: [{ 
+      position: 60, 
+      label: 'Size (HxDxW)', 
+      type: #AS_FIELDGROUP, 
+      valueQualifier: 'AllMeasures',
+      cssDefault.width: '10em'
+  }]
+  Measures;
 
   @UI: { lineItem:       [ { position: 30 } ],
          identification: [ { position: 30 } ],
@@ -114,16 +126,38 @@ annotate entity ZAM_C_PRODUCT with
 
   /* --- СИСТЕМНЫЕ ПОЛЯ (ADMIN DATA) --- */
 
-  @UI.fieldGroup: [{ qualifier: 'AdminData', position: 10 }]
-  @EndUserText.label: 'Created By'
+  @UI.fieldGroup: [{ 
+      qualifier: 'AdminData', 
+      position: 10,
+      label: 'Created By',
+      type: #AS_CONTACT,                 // <--- Магия здесь
+      value: '_CreatedByContact'         // <--- Ссылка на View с контактами
+  }]
+  @UI.lineItem: [{ 
+      position: 80, 
+      label: 'Created By',
+      type: #AS_CONTACT,                 
+      value: '_CreatedByContact'
+  }]
   created_by;
 
   @UI.fieldGroup: [{ qualifier: 'AdminData', position: 20 }]
   @EndUserText.label: 'Created At'
   creation_time;
 
-  @UI.fieldGroup: [{ qualifier: 'AdminData', position: 30 }]
-  @EndUserText.label: 'Changed By'
+  @UI.fieldGroup: [{ 
+      qualifier: 'AdminData', 
+      position: 30,
+      label: 'Changed By',
+      type: #AS_CONTACT,
+      value: '_ChangedByContact'
+  }]
+  @UI.lineItem: [{ 
+      position: 90, 
+      label: 'Changed By',
+      type: #AS_CONTACT,
+      value: '_ChangedByContact'
+  }]
   changed_by;
 
   @UI.fieldGroup: [{ qualifier: 'AdminData', position: 40 }]

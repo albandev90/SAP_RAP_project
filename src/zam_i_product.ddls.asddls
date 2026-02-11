@@ -9,6 +9,11 @@ association [0..1] to ZAM_I_UOM as _UOM on $projection.sizam_uom = _UOM.msehi
 composition [0..*] of ZAM_I_PRODUCTMARKET as _Market
 association [0..1] to ZAM_C_PRODUCT_ANALYZE as _ProductAnalyze 
     on $projection.prodid = _ProductAnalyze.ProdId
+association [0..1] to ZAM_I_CONTACT as _CreatedByContact 
+    on $projection.created_by = _CreatedByContact.UserID
+    
+  association [0..1] to ZAM_I_CONTACT as _ChangedByContact 
+    on $projection.changed_by = _ChangedByContact.UserID
 {
  key prod_uuid,
  @Search.defaultSearchElement: true 
@@ -28,25 +33,27 @@ association [0..1] to ZAM_C_PRODUCT_ANALYZE as _ProductAnalyze
     price_currency,
     taxrate,
     phase,
-    case phase
-      when 'PLAN' then 1 
-      when 'DEV'  then 2 
-      when 'PROD' then 3 
-      else 0 
+
+case cast( phase as abap.int4 )
+      when 1 then 1 
+      when 2 then 2 
+      when 3 then 3 
+      when 4 then 0
+      else 9       
     end as PhaseCriticality,
-    /* 1. Вычисляем процент (Имитация данных) */
-    case phase
-      when 'PLAN' then 20
-      when 'DEV'  then 60
-      when 'PROD' then 95
+ 
+    case cast( phase as abap.int4 )
+      when 1 then 20
+      when 2 then 60
+      when 3 then 95
+      when 4 then 100
       else 0 
     end as IncomePercentage,
 
-    /* 2. Цвет полоски (1-Красный, 2-Желтый, 3-Зеленый) */
-    case phase
-      when 'PLAN' then 1
-      when 'DEV'  then 2
-      when 'PROD' then 3
+    case cast( phase as abap.int4 )
+      when 1 then 1 
+      when 2 then 2 
+      when 3 then 3 
       else 0 
     end as IncomePercentageCriticality,
     @Semantics.user.createdBy: true
@@ -56,10 +63,13 @@ association [0..1] to ZAM_C_PRODUCT_ANALYZE as _ProductAnalyze
     @Semantics.user.lastChangedBy: true
     changed_by,
     @Semantics.systemDateTime.lastChangedAt: true
-    change_time,   
+    change_time,  
+  cast( '' as abap.char(30) ) as Measures,
   _ProductGroup,
   _Phase,
   _UOM,
   _Market,
-  _ProductAnalyze
+  _ProductAnalyze,
+  _CreatedByContact,
+  _ChangedByContact
 }
