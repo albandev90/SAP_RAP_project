@@ -1,23 +1,24 @@
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'Contact Card Information'
 
+/* Теперь читаем из реальной таблицы пользователей */
 define view entity ZAM_I_CONTACT 
-  as select from zam_d_product
+  as select from zam_d_user
 {
-  key created_by as UserID,
+  key user_id as UserID,
 
-  /* Используем MAX(), чтобы схлопнуть дубликаты и успокоить систему */
+  /* Склеиваем Имя + Фамилия */
   @Semantics.text: true
   @Semantics.name.fullName: true
-  max( concat('User ', created_by) ) as FullName,
+  concat_with_space(first_name, last_name, 1) as FullName,
 
-  'SAP Developer' as JobTitle,
+  job_title as JobTitle,
 
   @Semantics.eMail.address: true
   @Semantics.eMail.type: [#WORK]
-  max( concat(created_by, '@sap.com') ) as Email,
+  email as Email,
 
   @Semantics.telephone.type: [#WORK]
-  '+49 123 456 789' as Phone
-} 
-group by created_by  // <--- ГЛАВНОЕ ИСПРАВЛЕНИЕ
+  phone as Phone
+}
+/* Group By больше не нужен, так как в этой таблице ID уникальны */
